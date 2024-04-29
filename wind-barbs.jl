@@ -101,6 +101,33 @@ function scatter_wind!(ax; xs::T, ys::T, us::V, vs::V, size=0.3) where {T<:Union
     ax
 end
 
+function scatter_wind!(ax; xs::T, ys::T, vals::V, dirs::V, size::Real=0.3) where {T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},V<:Union{Vector,Observable{Vector{Real}}}}
+    windv = vals
+    rotations = begin
+        isa(dirs, Observable) ?
+        @lift(2pi .- $dirs * pi ./ 180) :
+        @. 2pi - dirs * pi / 180
+    end
+
+    # println((xs, ys, windv))
+
+    wind_markers = begin
+        isa(windv, Observable) ?
+        @lift($windv .|> wind_path .|> BezierPath) :
+        @. windv |> wind_path |> BezierPath
+    end
+
+    scatter!(ax, xs, ys,
+        marker=wind_markers,
+        markersize=size,
+        rotations=rotations,
+        #color=:transparent, 
+        strokecolor=:black, strokewidth=1
+    )
+
+    ax
+end
+
 function scatter_wind(; xs::T, ys::T, us::V, vs::V, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector},V<:Vector}
 
     f = Figure()
@@ -108,7 +135,20 @@ function scatter_wind(; xs::T, ys::T, us::V, vs::V, size=0.3, filename::String=n
     limits!(ax, 0, 3, 0, 3)
 
 
-    scatter_wind!(ax; xs, ys, us, vs,size)
+    scatter_wind!(ax; xs, ys, us, vs, size)
+
+    isnothing(filename) ? nothing : save(filename, f)
+    f
+end
+
+function scatter_wind(; xs::T, ys::T, vals::V, dirs::V, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector},V<:Vector}
+
+    f = Figure()
+    ax = Axis(f[1, 1])
+    limits!(ax, 0, 3, 0, 3)
+
+
+    scatter_wind!(ax; xs, ys, vals, dirs, size)
 
     isnothing(filename) ? nothing : save(filename, f)
     f
