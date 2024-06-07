@@ -14,6 +14,8 @@ function wind_path(value)
     ax = 0
     ay = height
 
+    δ = w*tan(5*pi/180)
+
     pathvector::Vector{Any} = [MoveTo(0, 0)]
 
     # println(typeof(pathvector))
@@ -26,7 +28,7 @@ function wind_path(value)
     # println(n20);
 
     for i in 1:n20
-        push!(pathvector, LineTo(ax + w, ay))
+        push!(pathvector, LineTo(ax + w, ay - δ))
         ay -= s
         push!(pathvector, LineTo(ax, ay))
     end
@@ -36,7 +38,7 @@ function wind_path(value)
     n4 = floor(Int, rest / 4)
 
     for i in 1:n4
-        push!(pathvector, LineTo(ax + w, ay))
+        push!(pathvector, LineTo(ax + w, ay + 2δ))
         push!(pathvector, LineTo(ax, ay)) #fix fill
         ay -= s
         push!(pathvector, MoveTo(ax, ay))
@@ -45,7 +47,7 @@ function wind_path(value)
     rest -= n4 * 4
 
     if (rest >= 2)
-        push!(pathvector, LineTo(ax + w / 2, ay))
+        push!(pathvector, LineTo(ax + w / 2, ay + δ))
         push!(pathvector, LineTo(ax, ay)) #fix fill
     end
 
@@ -76,13 +78,14 @@ function scatter_wind2!(ax; xs::T, ys::T, us::M, vs::M, size=0.3) where {T<:Unio
     ylength = length(ys)
 
     for x in 1:xlength
-        scatter_wind!(ax, xs=fill(xs[x], ylength), ys=collect(ys), us=us[x, :], vs=vs[x, :], size=size)
+        # println(typeof(fill(xs[x], ylength)), typeof(collect(ys)), typeof(us[x, :]), typeof(vs[x, :]))
+        scatter_wind_uv!(ax; xs=fill(xs[x], ylength), ys=collect(ys), us=us[x, :], vs=vs[x, :], size=size)
     end
 
     ax
 end
 
-function scatter_wind!(ax; xs::T, ys::T, us::V, vs::V, size=0.3) where {T<:Union{AbstractRange,Vector},V<:Vector}
+function scatter_wind_uv!(ax; xs::T, ys::T, us::V, vs::V, size=0.3) where {T<:Union{AbstractRange,Vector},V<:Vector}
     windv = @. sqrt(us^2 + vs^2)
     rotations = @. wind_rotation(us, vs)
 
@@ -101,7 +104,8 @@ function scatter_wind!(ax; xs::T, ys::T, us::V, vs::V, size=0.3) where {T<:Union
     ax
 end
 
-function scatter_wind!(ax; xs::T, ys::T, vals::V, dirs::V, size::Real=0.3) where {T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},V<:Union{Vector,Observable{Vector{Real}}}}
+
+function scatter_wind_vd!(ax; xs::T, ys::T, vals::V, dirs::V, size::Real=0.3) where {T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},V<:Union{Vector,Observable{Vector{Real}}}}
     windv = vals
     rotations = begin
         isa(dirs, Observable) ?
@@ -128,27 +132,22 @@ function scatter_wind!(ax; xs::T, ys::T, vals::V, dirs::V, size::Real=0.3) where
     ax
 end
 
-function scatter_wind(; xs::T, ys::T, us::V, vs::V, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector},V<:Vector}
-
-    f = Figure()
-    ax = Axis(f[1, 1])
-    limits!(ax, 0, 3, 0, 3)
-
-
-    scatter_wind!(ax; xs, ys, us, vs, size)
-
-    isnothing(filename) ? nothing : save(filename, f)
-    f
+function scatter_wind!(ax; xs::T, ys::T,us::V1=nothing, vs::V1=nothing, vals::V2=nothing, dirs::V2=nothing, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},V1<:Union{Nothing,Vector,Observable{Vector{Real}}},V2<:Union{Nothing,Vector,Observable{Vector{Real}}}}
+    if us !== nothing && vs !== nothing
+        scatter_wind_uv!(ax; xs, ys, us, vs, size)
+    elseif vals !== nothing && dirs !== nothing
+        scatter_wind_vd!(ax; xs, ys, vals, dirs, size)
+    else
+        println("Invalid arguments")
+    end
 end
 
-function scatter_wind(; xs::T, ys::T, vals::V, dirs::V, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector},V<:Vector}
-
+function scatter_wind(; xs::T, ys::T,us::V=nothing, vs::V=nothing, vals::V2=nothing, dirs::V2=nothing, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector},V<:Union{Nothing,Vector},V2<:Union{Nothing,Vector}} #
     f = Figure()
     ax = Axis(f[1, 1])
     limits!(ax, 0, 3, 0, 3)
 
-
-    scatter_wind!(ax; xs, ys, vals, dirs, size)
+    scatter_wind!(ax; xs, ys,us, vs, vals, dirs, size=0.3, filename)
 
     isnothing(filename) ? nothing : save(filename, f)
     f
@@ -174,8 +173,8 @@ function test()
     )
 
     save("scatter-path.png", p)
-    scatter_wind2(xs=1:2, ys=1:2, us=[1 1; -1 -1], vs=[1 -1; -1 1], filename="scatter-path2.png")
-    scatter_wind(xs=[1, 1, 2, 2], ys=[1, 2, 1, 2], us=[1, 1, -1, -1], vs=[1, -1, -1, 1], filename="scatter-path3.png")
+    scatter_wind2(xs=1:2, ys=1:2, us=[10 10; -10 -10], vs=[10 -10; -10 10], filename="scatter-path2.png")
+    scatter_wind(xs=[1, 1, 2, 2], ys=[1, 2, 1, 2], us=[10, 10, -10, -10], vs=[10, -10, -10, 10], filename="scatter-path3.png")
 end
 
 end

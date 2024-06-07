@@ -23,11 +23,11 @@ save("scatter-path.png", p)
 ![scatter-path.png](./scatter-path.png)
 
 ```julia
-scatter_wind2(xs=1:2, ys=1:2, us=[1 1; -1 -1], vs=[1 -1; -1 1], filename="scatter-path2.png")
+scatter_wind2(xs=1:2, ys=1:2, us=[10 10; -10 -10], vs=[10 -10; -10 10], filename="scatter-path2.png")
 ```
 ![scatter-path2.png](./scatter-path2.png)
 
 ```julia
-scatter_wind(xs=[1, 1, 2, 2], ys=[1, 2, 1, 2], us=[1, 1, -1, -1], vs=[1, -1, -1, 1], filename="scatter-path3.png")
+scatter_wind(xs=[1, 1, 2, 2], ys=[1, 2, 1, 2], us=[10, 10, -10, -10], vs=[10, -10, -10, 10], filename="scatter-path3.png")
 ```
 ![scatter-path3.png](./scatter-path3.png)
