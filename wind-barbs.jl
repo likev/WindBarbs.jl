@@ -14,7 +14,7 @@ function wind_path(value)
     ax = 0
     ay = height
 
-    δ = w*tan(5*pi/180)
+    δ = w * tan(5 * pi / 180)
 
     pathvector::Vector{Any} = [MoveTo(0, 0)]
 
@@ -61,7 +61,14 @@ function wind_rotation(u, v)
     u == 0 ? pi : pi + atan(v / u) - sign(u) * pi / 2
 end
 
-function scatter_wind2(; xs::T, ys::T, us::M, vs::M, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector},M<:Matrix}
+function scatter_wind2(;
+    xs::T, ys::T,
+    us::M, vs::M,
+    size=0.3, filename::String=nothing
+) where {
+    T<:Union{AbstractRange,Vector},
+    M<:Matrix
+}
     f = Figure()
     ax = Axis(f[1, 1])
     limits!(ax, 0, 3, 0, 3)
@@ -72,7 +79,14 @@ function scatter_wind2(; xs::T, ys::T, us::M, vs::M, size=0.3, filename::String=
     f
 end
 
-function scatter_wind2!(ax; xs::T, ys::T, us::M, vs::M, size=0.3) where {T<:Union{AbstractRange,Vector},M<:Matrix}
+function scatter_wind2!(ax;
+    xs::T, ys::T,
+    us::M, vs::M,
+    size=0.3
+) where {
+    T<:Union{AbstractRange,Vector},
+    M<:Matrix
+}
 
     xlength = length(xs)
     ylength = length(ys)
@@ -85,7 +99,14 @@ function scatter_wind2!(ax; xs::T, ys::T, us::M, vs::M, size=0.3) where {T<:Unio
     ax
 end
 
-function scatter_wind_uv!(ax; xs::T, ys::T, us::V, vs::V, size=0.3) where {T<:Union{AbstractRange,Vector},V<:Vector}
+function scatter_wind_uv!(ax;
+    xs::T, ys::T,
+    us::V, vs::V,
+    size=0.3
+) where {
+    T<:Union{AbstractRange,Vector},
+    V<:Vector
+}
     windv = @. sqrt(us^2 + vs^2)
     rotations = @. wind_rotation(us, vs)
 
@@ -105,7 +126,14 @@ function scatter_wind_uv!(ax; xs::T, ys::T, us::V, vs::V, size=0.3) where {T<:Un
 end
 
 
-function scatter_wind_vd!(ax; xs::T, ys::T, vals::V, dirs::V, size::Real=0.3) where {T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},V<:Union{Vector,Observable{Vector{Real}}}}
+function scatter_wind_vd!(ax;
+    xs::T, ys::T,
+    vals::V, dirs::V,
+    size::Real=0.3
+) where {
+    T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},
+    V<:Union{Vector,Observable{Vector{Real}}}
+}
     windv = vals
     rotations = begin
         isa(dirs, Observable) ?
@@ -132,7 +160,16 @@ function scatter_wind_vd!(ax; xs::T, ys::T, vals::V, dirs::V, size::Real=0.3) wh
     ax
 end
 
-function scatter_wind!(ax; xs::T, ys::T,us::V1=nothing, vs::V1=nothing, vals::V2=nothing, dirs::V2=nothing, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},V1<:Union{Nothing,Vector,Observable{Vector{Real}}},V2<:Union{Nothing,Vector,Observable{Vector{Real}}}}
+function scatter_wind!(ax;
+    xs::T, ys::T,
+    us::V1=nothing, vs::V1=nothing,
+    vals::V2=nothing, dirs::V2=nothing,
+    size=0.3, filename::String=nothing
+) where {
+    T<:Union{AbstractRange,Vector,Observable{Vector{Real}}},
+    V1<:Union{Nothing,Vector,Observable{Vector{Real}}},
+    V2<:Union{Nothing,Vector,Observable{Vector{Real}}}
+}
     if us !== nothing && vs !== nothing
         scatter_wind_uv!(ax; xs, ys, us, vs, size)
     elseif vals !== nothing && dirs !== nothing
@@ -142,12 +179,21 @@ function scatter_wind!(ax; xs::T, ys::T,us::V1=nothing, vs::V1=nothing, vals::V2
     end
 end
 
-function scatter_wind(; xs::T, ys::T,us::V=nothing, vs::V=nothing, vals::V2=nothing, dirs::V2=nothing, size=0.3, filename::String=nothing) where {T<:Union{AbstractRange,Vector},V<:Union{Nothing,Vector},V2<:Union{Nothing,Vector}} #
+function scatter_wind(;
+    xs::T, ys::T,
+    us::V1=nothing, vs::V1=nothing,
+    vals::V2=nothing, dirs::V2=nothing,
+    size=0.3, filename::String=nothing
+) where {
+    T<:Union{AbstractRange,Vector},
+    V1<:Union{Nothing,Vector},
+    V2<:Union{Nothing,Vector}
+}
     f = Figure()
     ax = Axis(f[1, 1])
     limits!(ax, 0, 3, 0, 3)
 
-    scatter_wind!(ax; xs, ys,us, vs, vals, dirs, size=0.3, filename)
+    scatter_wind!(ax; xs, ys, us, vs, vals, dirs, size=0.3, filename)
 
     isnothing(filename) ? nothing : save(filename, f)
     f
